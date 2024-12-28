@@ -34,7 +34,7 @@ def main():
     ########################## entities ##########################
 
     robot = scene.add_entity(
-        gs.morphs.MJCF(file="xml/franka_emika_panda/panda.xml"),
+        gs.morphs.URDF(file="urdf/ur10e/robot.urdf",fixed=True),
     )
 
     target_entity = scene.add_entity(
@@ -52,7 +52,7 @@ def main():
     center = np.array([0.4, -0.2, 0.25])
     r = 0.1
 
-    ee_link = robot.get_link("hand")
+    ee_link = robot.get_link("wrist_3_link")
 
     for i in range(0, 2000):
         target_pos = center + np.array([np.cos(i / 360 * np.pi), np.sin(i / 360 * np.pi), 0]) * r

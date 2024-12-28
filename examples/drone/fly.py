@@ -14,7 +14,7 @@ def main():
     args = parser.parse_args()
 
     ########################## init ##########################
-    gs.init(backend=gs.cpu)
+    gs.init(backend=gs.cuda)
 
     ########################## create a scene ##########################
     viewer_options = gs.options.ViewerOptions(
@@ -50,7 +50,8 @@ def main():
         # 14468 is hover rpm
         drone.set_propellels_rpm((1 + 0.05 * traj[i]) * 14468.429183500699)
         scene.step()
-
+    print("done")
+    input()
 
 if __name__ == "__main__":
     main()
