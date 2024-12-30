@@ -27,7 +27,7 @@ def main():
         rigid_options=gs.options.RigidOptions(
             enable_joint_limit=True,
             enable_collision=False,
-            enable_self_collision=False,
+            enable_self_collision=True,
             # gravity=(0, 0, -9.8),
             gravity=(0,0,0)
         ),
@@ -57,7 +57,7 @@ def main():
     )
 
     robot = scene.add_entity(
-        gs.morphs.URDF(file="urdf/ur10e/robot_wsg50.urdf",fixed=True),
+        gs.morphs.URDF(file="urdf/ur10e/robot_wsg50.urdf",fixed=True, merge_fixed_links=False),
     )
 
     joint_names = [ # robot.joints
@@ -99,41 +99,53 @@ def main():
         spp=512,
     )
 
+    camera_1 = scene.add_camera(
+        res=(640, 480),
+        pos=(8.5, 0.0, 1.5),
+        lookat=(3.0, 0.0, 0.7),
+        fov=60,
+        GUI=True,
+        spp=512,
+    )
+
     ########################## build ##########################
     scene.build()
 
     ### forward
     scene.reset()
 
-    # dofs_idx = [robot.get_joint(name).dof_idx_local for name in joint_names]
-    # robot.set_dofs_kp(
-    #     kp             = np.array([4500, 4500, 3500, 3500, 2000, 2000]),
-    #     dofs_idx_local = dofs_idx,
-    # )
-    # # set velocity gains
-    # robot.set_dofs_kv(
-    #     kv             = np.array([450, 450, 350, 350, 200, 200]),
-    #     dofs_idx_local = dofs_idx,
-    # )
+    dofs_idx = [robot.get_joint(name).dof_idx_local for name in joint_names]
+    robot.set_dofs_kp(
+        kp             = np.array([4500, 4500, 3500, 3500, 2000, 2000, 2000, 2000]),
+        dofs_idx_local = dofs_idx,
+    )
+    # set velocity gains
+    robot.set_dofs_kv(
+        kv             = np.array([450, 450, 350, 350, 200, 200, 200, 200]),
+        dofs_idx_local = dofs_idx,
+    )
     # # set force range for safety
     # robot.set_dofs_force_range(
-    #     lower          = np.array([-87, -87, -87, -87, -12, -12]),
-    #     upper          = np.array([ 87,  87,  87,  87,  12,  12]),
+    #     lower          = np.array([-87, -87, -87, -87, -12, -12, -12, -12]),
+    #     upper          = np.array([ 87,  87,  87,  87,  12,  12, 12, 12]),
     #     dofs_idx_local = dofs_idx,
     # )
 
     target_quat = np.array([0, 1, 0, 0])  # pointing downwards
-    target_quat = np.array([1, 0, 0, 0])
+    # target_quat = np.array([1, 0, 0, 0])
     center = np.array([0.4, -0.2, 0.25])
     r = 0.1
 
     ee_link = robot.get_link("wrist_3_link")
+    camera_1_link = robot.get_link("camera_1_link")
     print(ee_link.get_pos())
     print(ee_link.get_quat())
 
     # for i in range(0, 2000):
     i = 0
     while(True):
+        i += 1
+        i = i%2000 
         target_pos = center + np.array([np.cos(i / 360 * np.pi), np.sin(i / 360 * np.pi), 0]) * r
 
         target_entity.set_qpos(np.concatenate([target_pos, target_quat]))
@@ -156,7 +168,10 @@ def main():
         robot.control_dofs_position(q)
         scene.step()
         scene.visualizer.update()
-        camera_side.render()
+        
+        cam_pos = np.concatenate([camera_1_link.get_pos().cpu().numpy(), camera_1_link.get_quat().cpu().numpy()])
+        camera_side.set_pose
+        # camera_side.render()
 
 
 
