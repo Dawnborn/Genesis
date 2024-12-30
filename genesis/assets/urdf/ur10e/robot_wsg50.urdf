@@ -342,28 +342,24 @@
     <child link="base"/>
   </joint>
 
-  <!-- camera 1 -->
-  <joint name="camera_1_joint" type="fixed">
+  <!-- camera wrist -->
+  <joint name="camera_wrist_joint" type="fixed">
+      <origin rpy="-2.35619445 0 0" xyz="0 0.14 0"/>
       <parent link="wrist_3_link"/>
-      <child link="camera_1_link"/>
+      <child link="camera_wrist_link"/>
   </joint>
 
-  <link name="camera_1_link">
-    <visual>
-      <origin xyz="0 0.1 0" rpy="0 0 0" />
-      <geometry>
-          <box size="0.05 0.05 0.02" />
-      </geometry>
-      <material name="LightGrey">
-        <color rgba="0.7 0.7 0.7 1.0"/>
-      </material>
-    </visual>
-    <collision>
-      <origin xyz="0 0.1 0" rpy="0 0 0" />
-      <geometry>
-          <box size="0.05 0.05 0.02" />
-      </geometry>
-    </collision>
+  <link name="camera_wrist_link">
+  </link>
+
+  <!-- camera wrist back -->
+  <joint name="camera_wrist_back_joint" type="fixed">
+      <origin rpy="0.7853 -3.14 0" xyz="0 -0.14 0"/>
+      <parent link="wrist_3_link"/>
+      <child link="camera_wrist_back_link"/>
+  </joint>
+
+  <link name="camera_wrist_back_link">
   </link>
   
   <!-- wsg50 -->

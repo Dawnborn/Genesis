@@ -4,6 +4,26 @@ import numpy as np
 
 import genesis as gs
 
+import scipy
+from scipy.spatial.transform import Rotation as R
+
+def quat_pos_to_homogeneous_matrix(quat, pos):
+    """
+    将四元数和位置转换为齐次变换矩阵
+    :param quat: 四元数 [w, x, y, z]
+    :param pos: 位置信息 [x, y, z]
+    :return: 齐次变换矩阵 4x4
+    """
+    # 创建旋转矩阵
+    rotation = R.from_quat([quat[1], quat[2], quat[3], quat[0]])  # 注意 scipy 的四元数格式是 [x, y, z, w]
+    rotation_matrix = rotation.as_matrix()
+
+    # 创建齐次变换矩阵
+    homogeneous_matrix = np.eye(4)
+    homogeneous_matrix[:3, :3] = rotation_matrix
+    homogeneous_matrix[:3, 3] = pos
+
+    return homogeneous_matrix
 
 def main():
 
@@ -92,17 +112,26 @@ def main():
 
     camera_side = scene.add_camera(
         res=(640, 480),
-        pos=(8.5, 0.0, 1.5),
-        lookat=(3.0, 0.0, 0.7),
+        pos=(0.8, -0.7, 0.6),
+        lookat=(0.8, 0, 0),
         fov=60,
         GUI=True,
         spp=512,
     )
 
-    camera_1 = scene.add_camera(
+    camera_wrist = scene.add_camera(
         res=(640, 480),
-        pos=(8.5, 0.0, 1.5),
-        lookat=(3.0, 0.0, 0.7),
+        pos=(0.8, -0.7, 0.6),
+        lookat=(0.8, 0, 0),
+        fov=60,
+        GUI=True,
+        spp=512,
+    )
+
+    camera_wrist_back = scene.add_camera(
+        res=(640, 480),
+        pos=(0.8, -0.7, 0.6),
+        lookat=(0.8, 0, 0),
         fov=60,
         GUI=True,
         spp=512,
@@ -137,7 +166,8 @@ def main():
     r = 0.1
 
     ee_link = robot.get_link("wrist_3_link")
-    camera_1_link = robot.get_link("camera_1_link")
+    camera_wrist_link = robot.get_link("camera_wrist_link")
+    camera_wrist_back_link = robot.get_link("camera_wrist_back_link")
     print(ee_link.get_pos())
     print(ee_link.get_quat())
 
@@ -169,8 +199,16 @@ def main():
         scene.step()
         scene.visualizer.update()
         
-        cam_pos = np.concatenate([camera_1_link.get_pos().cpu().numpy(), camera_1_link.get_quat().cpu().numpy()])
-        camera_side.set_pose
+        cam_pos = np.concatenate([camera_wrist_link.get_pos().cpu().numpy(), camera_wrist_link.get_quat().cpu().numpy()])
+
+        cam_wrist_transform = quat_pos_to_homogeneous_matrix(camera_wrist_link.get_quat().cpu().numpy(), camera_wrist_link.get_pos().cpu().numpy())
+        camera_wrist.set_pose(transform=cam_wrist_transform)
+        camera_wrist.render()
+
+        cam_wrist_back_transform = quat_pos_to_homogeneous_matrix(camera_wrist_back_link.get_quat().cpu().numpy(), camera_wrist_back_link.get_pos().cpu().numpy())
+        camera_wrist_back.set_pose(transform=cam_wrist_back_transform)
+        camera_wrist_back.render()
+
         # camera_side.render()
 
 
